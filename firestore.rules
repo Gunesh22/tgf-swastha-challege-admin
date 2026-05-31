@@ -1,23 +1,29 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Participants can read/write their own data
-    match /participants/{phone} {
-      allow read, write: if true;
-    }
-    // Counters are readable by all, writable by all
-    match /counters/{doc} {
-      allow read, write: if true;
-    }
-    // Admin collections (Authentication bypassed as requested)
+    
+    // 1. Admin configurations: Public read ok.
+    // Allow writes so the Admin Dashboard can manage settings and challenges!
     match /admin_settings/{doc} {
       allow read, write: if true;
     }
     match /challenges/{challenge} {
       allow read, write: if true;
     }
-    match /enrollments/{enrollment} {
-      allow read, write: if true;
+    // 2. User Profiles: Admin dashboard needs full read access to display user data.
+    match /users/{userId} {
+      allow read, create, update: if true;
+      allow delete: if false;
+    }
+    // 3. User Challenge Progress: Must allow queries to populate the dashboard and count community totals.
+    match /user_challenges/{doc} {
+      allow read, create, update: if true;
+      allow delete: if false;
+    }
+    
+    // 4. Default Explicit Block: Locks down collections you didn't define.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

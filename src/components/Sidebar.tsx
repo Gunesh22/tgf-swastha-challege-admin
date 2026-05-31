@@ -1,11 +1,14 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Settings, Sun } from 'lucide-react';
+import { LayoutDashboard, Users, BarChart2, Medal, Settings, Sun } from 'lucide-react';
 
 export default function Sidebar() {
     const location = useLocation();
 
     const navItems = [
         { path: '/', label: 'Overview', icon: LayoutDashboard },
+        { path: '/users', label: 'All Users', icon: Users },
+        { path: '/leaderboard', label: 'Leaderboard', icon: Medal },
+        { path: '/analytics', label: 'Analytics', icon: BarChart2 },
         { path: '/challenges', label: 'Manage Challenges', icon: Settings },
     ];
 
