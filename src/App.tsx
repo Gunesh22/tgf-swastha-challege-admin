@@ -7,6 +7,7 @@ import Users from './pages/Users';
 import UserDetail from './pages/UserDetail';
 import Analytics from './pages/Analytics';
 import Leaderboard from './pages/Leaderboard';
+import ContentManagement from './pages/ContentManagement';
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/users/:id" element={<UserDetail />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/content" element={<ContentManagement />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </div>

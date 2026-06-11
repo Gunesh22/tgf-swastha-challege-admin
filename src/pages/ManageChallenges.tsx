@@ -9,6 +9,8 @@ interface Habit {
     description: string;
     icon: string;
     color: string;
+    hindiName?: string;
+    hindiDescription?: string;
 }
 
 interface Challenge {
@@ -24,24 +26,34 @@ interface Challenge {
 }
 
 const HOLISTIC_HABITS: Habit[] = [
-    { id: 'water', name: 'Drink Water', description: 'Stay hydrated (3L)', icon: 'water_drop', color: 'primary' },
-    { id: 'meditate', name: 'Meditate', description: 'Mindfulness practice (15m)', icon: 'self_improvement', color: 'secondary' },
-    { id: 'read', name: 'Read Book', description: '10 pages a day', icon: 'menu_book', color: 'tertiary' },
-    { id: 'exercise', name: 'Exercise', description: 'Active movement (30m)', icon: 'fitness_center', color: 'primary' },
-    { id: 'journal', name: 'Journaling', description: 'Reflect on today', icon: 'edit_note', color: 'secondary' },
-    { id: 'sleep', name: 'Sleep 8 Hours', description: 'Proper body recovery', icon: 'bedtime', color: 'tertiary' },
-    { id: 'diet', name: 'Healthy Meal', description: 'Fuel your body right', icon: 'restaurant', color: 'primary' }
+    { id: 'early_rising', name: 'Early Rising', description: 'Wake up early to start your day with energy', hindiName: 'प्रातः काल जागरण', hindiDescription: 'ऊर्जा के साथ दिन की शुरुआत के लिए सुबह जल्दी उठें', icon: 'wb_sunny', color: 'primary' },
+    { id: 'morning_hydration', name: 'Morning Hydration Ritual', description: 'Drink warm water first thing in the morning', hindiName: 'उषापान', hindiDescription: 'सुबह उठते ही सबसे पहले गुनगुना पानी पिएं', icon: 'water_drop', color: 'secondary' },
+    { id: 'yogasana', name: 'Daily Yogasana Practice', description: 'Perform physical postures for strength and flexibility', hindiName: 'दैनिक योगासन अभ्यास', hindiDescription: 'शारीरिक शक्ति और लचीलेपन के लिए योगासन करें', icon: 'self_improvement', color: 'tertiary' },
+    { id: 'conscious_breathing', name: 'Conscious Breathing', description: 'Practice deep, mindful breathing (Pranayama)', hindiName: 'सचेत श्वास क्रिया', hindiDescription: 'गहरी और सचेत सांस लेने (प्राणायाम) का अभ्यास करें', icon: 'air', color: 'primary' },
+    { id: 'mindful_eating', name: 'Mindful Eating', description: 'Chew food slowly and appreciate its taste and nutrition', hindiName: 'सचेत भोजन', hindiDescription: 'भोजन को धीरे-धीरे चबाएं और स्वाद व पोषण का अनुभव करें', icon: 'restaurant', color: 'secondary' },
+    { id: 'gratitude', name: 'Gratitude Practice', description: 'Write down three things you are grateful for today', hindiName: 'कृतज्ञता अभ्यास', hindiDescription: 'आज जिन तीन चीजों के लिए आप आभारी हैं, उन्हें लिखें', icon: 'favorite', color: 'tertiary' },
+    { id: 'digital_detox', name: 'Digital Detox Before Sleep', description: 'Avoid screens 30-45 minutes before bedtime', hindiName: 'सोने से पहले डिजिटल डिटॉक्स', hindiDescription: 'सोने से 30-45 मिनट पहले स्क्रीन के इस्तेमाल से बचें', icon: 'phonelink_off', color: 'primary' },
+    { id: 'water', name: 'Drink Water', description: 'Stay hydrated (3L)', hindiName: 'पानी पीना', hindiDescription: 'हाइड्रेटेड रहें (3 लीटर)', icon: 'water_drop', color: 'primary' },
+    { id: 'meditate', name: 'Meditate', description: 'Mindfulness practice (15m)', hindiName: 'ध्यान साधना', hindiDescription: 'सचेतन अभ्यास (15 मिनट)', icon: 'self_improvement', color: 'secondary' },
+    { id: 'read', name: 'Read Book', description: '10 pages a day', hindiName: 'पुस्तक पढ़ना', hindiDescription: 'रोज 10 पृष्ठ पढ़ें', icon: 'menu_book', color: 'tertiary' },
+    { id: 'exercise', name: 'Exercise', description: 'Active movement (30m)', hindiName: 'व्यायाम', hindiDescription: 'सक्रिय शारीरिक गतिविधि (30 मिनट)', icon: 'fitness_center', color: 'primary' },
+    { id: 'journal', name: 'Journaling', description: 'Reflect on today', hindiName: 'दैनिक डायरी लिखना', hindiDescription: 'आज के दिन पर विचार करें', icon: 'edit_note', color: 'secondary' },
+    { id: 'sleep', name: 'Sleep 8 Hours', description: 'Proper body recovery', hindiName: '8 घंटे की नींद', hindiDescription: 'शरीर को पुनर्जीवित करने के लिए', icon: 'bedtime', color: 'tertiary' },
+    { id: 'diet', name: 'Healthy Meal', description: 'Fuel your body right', hindiName: 'स्वस्वस्थ भोजन', hindiDescription: 'शरीर को सही पोषण दें', icon: 'restaurant', color: 'primary' }
 ];
 
 const getHabitIconEmoji = (iconName: string): string => {
     const lower = iconName.toLowerCase();
-    if (lower.includes('water') || lower.includes('drop')) return '💧';
-    if (lower.includes('meditate') || lower.includes('self') || lower.includes('improvement')) return '🧘';
+    if (lower.includes('sunny') || lower.includes('sun') || lower.includes('early') || lower.includes('rise')) return '🌅';
+    if (lower.includes('water') || lower.includes('drop') || lower.includes('hydration')) return '💧';
+    if (lower.includes('meditate') || lower.includes('self') || lower.includes('improvement') || lower.includes('yoga')) return '🧘';
+    if (lower.includes('air') || lower.includes('breath') || lower.includes('breathing')) return '💨';
     if (lower.includes('read') || lower.includes('book')) return '📚';
     if (lower.includes('exercise') || lower.includes('fitness') || lower.includes('center') || lower.includes('run')) return '💪';
     if (lower.includes('journal') || lower.includes('note') || lower.includes('write') || lower.includes('edit')) return '✍️';
-    if (lower.includes('sleep') || lower.includes('bed') || lower.includes('night')) return '🌙';
-    if (lower.includes('diet') || lower.includes('restaurant') || lower.includes('food') || lower.includes('eat')) return '🥗';
+    if (lower.includes('sleep') || lower.includes('bed') || lower.includes('night') || lower.includes('detox')) return '🌙';
+    if (lower.includes('diet') || lower.includes('restaurant') || lower.includes('food') || lower.includes('eat') || lower.includes('eating')) return '🥗';
+    if (lower.includes('favorite') || lower.includes('gratitude') || lower.includes('love') || lower.includes('heart')) return '💖';
     if (lower.includes('cafe') || lower.includes('tea') || lower.includes('coffee') || lower.includes('local_cafe')) return '🍵';
     return '🪷';
 };
@@ -70,6 +82,8 @@ export default function ManageChallenges() {
     // Sub-form for a new challenge-specific custom habit
     const [newHabitName, setNewHabitName] = useState('');
     const [newHabitDescription, setNewHabitDescription] = useState('');
+    const [newHabitHindiName, setNewHabitHindiName] = useState('');
+    const [newHabitHindiDescription, setNewHabitHindiDescription] = useState('');
     const [newHabitIcon, setNewHabitIcon] = useState('self_improvement');
     const [newHabitColor, setNewHabitColor] = useState('primary');
 
@@ -121,6 +135,8 @@ export default function ManageChallenges() {
         setCustomHabits([]);
         setNewHabitName('');
         setNewHabitDescription('');
+        setNewHabitHindiName('');
+        setNewHabitHindiDescription('');
         setNewHabitIcon('self_improvement');
         setNewHabitColor('primary');
     };
@@ -134,7 +150,7 @@ export default function ManageChallenges() {
             return;
         }
         if (habitCount < 1) {
-            setMessage('Habits to Select must be at least 1.');
+            setMessage('Minimum Habits to Select must be at least 1.');
             return;
         }
 
@@ -359,7 +375,7 @@ export default function ManageChallenges() {
                         </div>
 
                         <div className="form-group">
-                            <label>Habits to Select <small style={{ color: 'var(--accent)', fontWeight: 700 }}>★</small></label>
+                            <label>Minimum Habits to Select <small style={{ color: 'var(--accent)', fontWeight: 700 }}>★</small></label>
                             <input
                                 type="number"
                                 className="glass-input"
@@ -367,9 +383,9 @@ export default function ManageChallenges() {
                                 onChange={(e) => setHabitCount(Math.max(1, Number(e.target.value)))}
                                 min={1}
                                 max={10}
-                                title="How many habits must each participant choose on the challenge website"
+                                title="Minimum number of habits the user should choose on the challenge website"
                             />
-                            <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>Habits participant must choose</p>
+                            <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>Minimum number of habits the user should choose</p>
                         </div>
                     </div>
 
@@ -499,8 +515,12 @@ export default function ManageChallenges() {
                                                 {getHabitIconEmoji(habit.icon)}
                                             </div>
                                             <div style={{ flex: 1, minWidth: 0 }}>
-                                                <div style={{ fontWeight: 600, fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{habit.name}</div>
-                                                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{habit.description}</div>
+                                                <div style={{ fontWeight: 600, fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    {habit.name} {habit.hindiName && <span style={{ fontWeight: 400, color: 'var(--text-secondary)', fontSize: '12px', marginLeft: '6px' }}>({habit.hindiName})</span>}
+                                                </div>
+                                                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    {habit.description} {habit.hindiDescription && <span style={{ fontStyle: 'italic', fontSize: '10px', marginLeft: '4px' }}>({habit.hindiDescription})</span>}
+                                                </div>
                                             </div>
                                         </div>
                                     );
@@ -514,113 +534,151 @@ export default function ManageChallenges() {
                                 Add Custom Habits (Specific to this Challenge)
                             </h4>
 
-                            {/* Render added custom habits */}
-                            {customHabits.length > 0 && (
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
-                                    {customHabits.map((ch) => (
-                                        <div
-                                            key={ch.id}
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '8px',
-                                                padding: '6px 12px',
-                                                backgroundColor: '#f1f5f9',
-                                                border: '1px solid #cbd5e1',
-                                                borderRadius: '20px',
-                                                fontSize: '13px'
-                                            }}
-                                        >
-                                            <span style={{ fontWeight: 600 }}>{ch.name}</span>
-                                            <span style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>({ch.description})</span>
-                                            <button
-                                                type="button"
-                                                onClick={() => setCustomHabits(prev => prev.filter(item => item.id !== ch.id))}
-                                                style={{ border: 'none', background: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
-                                            >
-                                                <X size={14} />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Form to add custom habit */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr auto', gap: '12px', alignItems: 'end' }}>
-                                <div className="form-group" style={{ margin: 0 }}>
-                                    <label style={{ fontSize: '11px', marginBottom: '4px' }}>Habit Name</label>
-                                    <input
-                                        type="text"
-                                        className="glass-input"
-                                        placeholder="e.g. Drink Green Tea"
-                                        value={newHabitName}
-                                        onChange={(e) => setNewHabitName(e.target.value)}
-                                        style={{ height: '36px', fontSize: '13px' }}
-                                    />
-                                </div>
-
-                                <div className="form-group" style={{ margin: 0 }}>
-                                    <label style={{ fontSize: '11px', marginBottom: '4px' }}>Description</label>
-                                    <input
-                                        type="text"
-                                        className="glass-input"
-                                        placeholder="e.g. 1 cup in morning"
-                                        value={newHabitDescription}
-                                        onChange={(e) => setNewHabitDescription(e.target.value)}
-                                        style={{ height: '36px', fontSize: '13px' }}
-                                    />
-                                </div>
-
-                                <div className="form-group" style={{ margin: 0 }}>
-                                    <label style={{ fontSize: '11px', marginBottom: '4px' }}>Material Icon</label>
-                                    <input
-                                        type="text"
-                                        className="glass-input"
-                                        placeholder="e.g. local_cafe"
-                                        value={newHabitIcon}
-                                        onChange={(e) => setNewHabitIcon(e.target.value)}
-                                        style={{ height: '36px', fontSize: '13px' }}
-                                    />
-                                </div>
-
-                                <div className="form-group" style={{ margin: 0 }}>
-                                    <label style={{ fontSize: '11px', marginBottom: '4px' }}>Theme Color</label>
-                                    <select
-                                        className="glass-input"
-                                        value={newHabitColor}
-                                        onChange={(e) => setNewHabitColor(e.target.value)}
-                                        style={{ height: '36px', fontSize: '13px', padding: '6px' }}
-                                    >
-                                        <option value="primary">Teal (Primary)</option>
-                                        <option value="secondary">Indigo (Secondary)</option>
-                                        <option value="tertiary">Orange (Tertiary)</option>
-                                    </select>
-                                </div>
-
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        if (!newHabitName || !newHabitDescription) return;
-                                        const newHabit: Habit = {
-                                            id: `custom_${Date.now()}`,
-                                            name: newHabitName,
-                                            description: newHabitDescription,
-                                            icon: newHabitIcon || 'self_improvement',
-                                            color: newHabitColor
-                                        };
-                                        setCustomHabits(prev => [...prev, newHabit]);
-                                        setNewHabitName('');
-                                        setNewHabitDescription('');
-                                        setNewHabitIcon('self_improvement');
-                                        setNewHabitColor('primary');
-                                    }}
-                                    className="glass-button"
-                                    style={{ height: '36px', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                >
-                                    + Add
-                                </button>
-                            </div>
-                        </div>
+                             {/* Render added custom habits */}
+                             {customHabits.length > 0 && (
+                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+                                     {customHabits.map((ch) => (
+                                         <div
+                                             key={ch.id}
+                                             style={{
+                                                 display: 'flex',
+                                                 alignItems: 'center',
+                                                 gap: '8px',
+                                                 padding: '6px 12px',
+                                                 backgroundColor: '#f1f5f9',
+                                                 border: '1px solid #cbd5e1',
+                                                 borderRadius: '20px',
+                                                 fontSize: '13px'
+                                             }}
+                                         >
+                                             <span style={{ fontWeight: 600 }}>
+                                                 {ch.name} {ch.hindiName && <span style={{ fontWeight: 400, color: 'var(--text-secondary)', fontSize: '12px' }}>({ch.hindiName})</span>}
+                                             </span>
+                                             <span style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>
+                                                 ({ch.description}{ch.hindiDescription && ` / ${ch.hindiDescription}`})
+                                             </span>
+                                             <button
+                                                 type="button"
+                                                 onClick={() => setCustomHabits(prev => prev.filter(item => item.id !== ch.id))}
+                                                 style={{ border: 'none', background: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
+                                             >
+                                                 <X size={14} />
+                                             </button>
+                                         </div>
+                                     ))}
+                                 </div>
+                             )}
+ 
+                             {/* Form to add custom habit */}
+                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                 {/* Row 1: English & Settings */}
+                                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr', gap: '12px', alignItems: 'end' }}>
+                                     <div className="form-group" style={{ margin: 0 }}>
+                                         <label style={{ fontSize: '11px', marginBottom: '4px' }}>Habit Name (EN)</label>
+                                         <input
+                                             type="text"
+                                             className="glass-input"
+                                             placeholder="e.g. Drink Green Tea"
+                                             value={newHabitName}
+                                             onChange={(e) => setNewHabitName(e.target.value)}
+                                             style={{ height: '36px', fontSize: '13px' }}
+                                         />
+                                     </div>
+ 
+                                     <div className="form-group" style={{ margin: 0 }}>
+                                         <label style={{ fontSize: '11px', marginBottom: '4px' }}>Description (EN)</label>
+                                         <input
+                                             type="text"
+                                             className="glass-input"
+                                             placeholder="e.g. 1 cup in morning"
+                                             value={newHabitDescription}
+                                             onChange={(e) => setNewHabitDescription(e.target.value)}
+                                             style={{ height: '36px', fontSize: '13px' }}
+                                         />
+                                     </div>
+ 
+                                     <div className="form-group" style={{ margin: 0 }}>
+                                         <label style={{ fontSize: '11px', marginBottom: '4px' }}>Material Icon</label>
+                                         <input
+                                             type="text"
+                                             className="glass-input"
+                                             placeholder="e.g. local_cafe"
+                                             value={newHabitIcon}
+                                             onChange={(e) => setNewHabitIcon(e.target.value)}
+                                             style={{ height: '36px', fontSize: '13px' }}
+                                         />
+                                     </div>
+ 
+                                     <div className="form-group" style={{ margin: 0 }}>
+                                         <label style={{ fontSize: '11px', marginBottom: '4px' }}>Theme Color</label>
+                                         <select
+                                             className="glass-input"
+                                             value={newHabitColor}
+                                             onChange={(e) => setNewHabitColor(e.target.value)}
+                                             style={{ height: '36px', fontSize: '13px', padding: '6px' }}
+                                         >
+                                             <option value="primary">Teal (Primary)</option>
+                                             <option value="secondary">Indigo (Secondary)</option>
+                                             <option value="tertiary">Orange (Tertiary)</option>
+                                         </select>
+                                     </div>
+                                 </div>
+ 
+                                 {/* Row 2: Hindi Translations & Add Button */}
+                                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr auto', gap: '12px', alignItems: 'end' }}>
+                                     <div className="form-group" style={{ margin: 0 }}>
+                                         <label style={{ fontSize: '11px', marginBottom: '4px' }}>Habit Name (Hindi)</label>
+                                         <input
+                                             type="text"
+                                             className="glass-input"
+                                             placeholder="जैसे: हरी चाय पीना"
+                                             value={newHabitHindiName}
+                                             onChange={(e) => setNewHabitHindiName(e.target.value)}
+                                             style={{ height: '36px', fontSize: '13px' }}
+                                         />
+                                     </div>
+ 
+                                     <div className="form-group" style={{ margin: 0 }}>
+                                         <label style={{ fontSize: '11px', marginBottom: '4px' }}>Description (Hindi)</label>
+                                         <input
+                                             type="text"
+                                             className="glass-input"
+                                             placeholder="जैसे: सुबह 1 कप पिएं"
+                                             value={newHabitHindiDescription}
+                                             onChange={(e) => setNewHabitHindiDescription(e.target.value)}
+                                             style={{ height: '36px', fontSize: '13px' }}
+                                         />
+                                     </div>
+ 
+                                     <button
+                                         type="button"
+                                         onClick={() => {
+                                             if (!newHabitName || !newHabitDescription) return;
+                                             const newHabit: Habit = {
+                                                 id: `custom_${Date.now()}`,
+                                                 name: newHabitName,
+                                                 description: newHabitDescription,
+                                                 hindiName: newHabitHindiName || undefined,
+                                                 hindiDescription: newHabitHindiDescription || undefined,
+                                                 icon: newHabitIcon || 'self_improvement',
+                                                 color: newHabitColor
+                                             };
+                                             setCustomHabits(prev => [...prev, newHabit]);
+                                             setNewHabitName('');
+                                             setNewHabitDescription('');
+                                             setNewHabitHindiName('');
+                                             setNewHabitHindiDescription('');
+                                             setNewHabitIcon('self_improvement');
+                                             setNewHabitColor('primary');
+                                         }}
+                                         className="glass-button"
+                                         style={{ height: '36px', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                     >
+                                         + Add Custom Habit
+                                     </button>
+                                 </div>
+                             </div>
+                         </div>
                     </div>
 
                     <button type="submit" className="glass-button" disabled={submitting} style={{ marginTop: '24px' }}>
@@ -690,24 +748,24 @@ export default function ManageChallenges() {
                                 <tr>
                                     <th>Challenge Name</th>
                                     <th>Duration</th>
-                                    <th>Habits to Pick</th>
+                                    <th>Min Habits to Choose</th>
                                     <th>Format</th>
                                     <th>Status</th>
                                     <th>Configured Habits</th>
                                     <th style={{ textAlign: 'right' }}>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredChallenges.map((challenge) => (
-                                    <tr key={challenge.id}>
-                                        <td style={{ fontWeight: 500 }}>{challenge.title || (challenge as any).name}</td>
-                                        <td>{challenge.durationDays} Days</td>
-                                        <td>
-                                            <span style={{ fontWeight: 700, color: 'var(--accent)' }}>
-                                                {(challenge as any).habitCount || 5}
-                                            </span>
-                                            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginLeft: '4px' }}>habits</span>
-                                        </td>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  {filteredChallenges.map((challenge) => (
+                                      <tr key={challenge.id}>
+                                          <td style={{ fontWeight: 500 }}>{challenge.title || (challenge as any).name}</td>
+                                          <td>{challenge.durationDays} Days</td>
+                                          <td>
+                                              <span style={{ fontWeight: 700, color: 'var(--accent)' }}>
+                                                  {(challenge as any).habitCount || 5}
+                                              </span>
+                                              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginLeft: '4px' }}>min habits</span>
+                                          </td>
                                         <td>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 {challenge.startType === 'rolling' ? <RefreshCw size={14} /> : <Calendar size={14} />}

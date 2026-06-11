@@ -1,16 +1,23 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { FileText, Save, RefreshCw, Languages, Plus, Trash2, Activity } from 'lucide-react';
+import { FileText, Save, RefreshCw, Languages, Plus, Trash2, Activity, RotateCcw } from 'lucide-react';
 
 const DEFAULT_HABITS = [
-    { id: 'water', name: 'Drink Water', description: 'Stay hydrated (3L)', icon: 'water_drop', color: 'primary' },
-    { id: 'meditate', name: 'Meditate', description: 'Mindfulness practice (15m)', icon: 'self_improvement', color: 'secondary' },
-    { id: 'read', name: 'Read Book', description: '10 pages a day', icon: 'menu_book', color: 'tertiary' },
-    { id: 'exercise', name: 'Exercise', description: 'Active movement (30m)', icon: 'fitness_center', color: 'primary' },
-    { id: 'journal', name: 'Journaling', description: 'Reflect on today', icon: 'edit_note', color: 'secondary' },
-    { id: 'sleep', name: 'Sleep 8 Hours', description: 'Proper body recovery', icon: 'bedtime', color: 'tertiary' },
-    { id: 'diet', name: 'Healthy Meal', description: 'Fuel your body right', icon: 'restaurant', color: 'primary' }
+    { id: 'early_rising', name: 'Early Rising', description: 'Wake up early to start your day with energy', hindiName: 'प्रातः काल जागरण', hindiDescription: 'ऊर्जा के साथ दिन की शुरुआत के लिए सुबह जल्दी उठें', icon: 'wb_sunny', color: 'primary' },
+    { id: 'morning_hydration', name: 'Morning Hydration Ritual', description: 'Drink warm water first thing in the morning', hindiName: 'उषापान', hindiDescription: 'सुबह उठते ही सबसे पहले गुनगुना पानी पिएं', icon: 'water_drop', color: 'secondary' },
+    { id: 'yogasana', name: 'Daily Yogasana Practice', description: 'Perform physical postures for strength and flexibility', hindiName: 'दैनिक योगासन अभ्यास', hindiDescription: 'शारीरिक शक्ति और लचीलेपन के लिए योगासन करें', icon: 'self_improvement', color: 'tertiary' },
+    { id: 'conscious_breathing', name: 'Conscious Breathing', description: 'Practice deep, mindful breathing (Pranayama)', hindiName: 'सचेत श्वास क्रिया', hindiDescription: 'गहरी और सचेत सांस लेने (प्राणायाम) का अभ्यास करें', icon: 'air', color: 'primary' },
+    { id: 'mindful_eating', name: 'Mindful Eating', description: 'Chew food slowly and appreciate its taste and nutrition', hindiName: 'सचेत भोजन', hindiDescription: 'भोजन को धीरे-धीरे चबाएं और स्वाद व पोषण का अनुभव करें', icon: 'restaurant', color: 'secondary' },
+    { id: 'gratitude', name: 'Gratitude Practice', description: 'Write down three things you are grateful for today', hindiName: 'कृतज्ञता अभ्यास', hindiDescription: 'आज जिन तीन चीजों के लिए आप आभारी हैं, उन्हें लिखें', icon: 'favorite', color: 'tertiary' },
+    { id: 'digital_detox', name: 'Digital Detox Before Sleep', description: 'Avoid screens 30-45 minutes before bedtime', hindiName: 'सोने से पहले डिजिटल डिटॉक्स', hindiDescription: 'सोने से 30-45 मिनट पहले स्क्रीन के इस्तेमाल से बचें', icon: 'phonelink_off', color: 'primary' },
+    { id: 'water', name: 'Drink Water', description: 'Stay hydrated (3L)', hindiName: 'पानी पीना', hindiDescription: 'हाइड्रेटेड रहें (3 लीटर)', icon: 'water_drop', color: 'primary' },
+    { id: 'meditate', name: 'Meditate', description: 'Mindfulness practice (15m)', hindiName: 'ध्यान साधना', hindiDescription: 'सचेतन अभ्यास (15 मिनट)', icon: 'self_improvement', color: 'secondary' },
+    { id: 'read', name: 'Read Book', description: '10 pages a day', hindiName: 'पुस्तक पढ़ना', hindiDescription: 'रोज 10 पृष्ठ पढ़ें', icon: 'menu_book', color: 'tertiary' },
+    { id: 'exercise', name: 'Exercise', description: 'Active movement (30m)', hindiName: 'व्यायाम', hindiDescription: 'सक्रिय शारीरिक गतिविधि (30 मिनट)', icon: 'fitness_center', color: 'primary' },
+    { id: 'journal', name: 'Journaling', description: 'Reflect on today', hindiName: 'दैनिक डायरी लिखना', hindiDescription: 'आज के दिन पर विचार करें', icon: 'edit_note', color: 'secondary' },
+    { id: 'sleep', name: 'Sleep 8 Hours', description: 'Proper body recovery', hindiName: '8 घंटे की नींद', hindiDescription: 'शरीर को पुनर्जीवित करने के लिए', icon: 'bedtime', color: 'tertiary' },
+    { id: 'diet', name: 'Healthy Meal', description: 'Fuel your body right', hindiName: 'स्वस्थ भोजन', hindiDescription: 'शरीर को सही पोषण दें', icon: 'restaurant', color: 'primary' }
 ];
 
 export default function ContentManagement() {
@@ -24,8 +31,11 @@ export default function ContentManagement() {
     // New habit form inputs
     const [newHabitName, setNewHabitName] = useState('');
     const [newHabitDesc, setNewHabitDesc] = useState('');
+    const [newHabitHindiName, setNewHabitHindiName] = useState('');
+    const [newHabitHindiDesc, setNewHabitHindiDesc] = useState('');
     const [newHabitIcon, setNewHabitIcon] = useState('spa');
     const [newHabitColor, setNewHabitColor] = useState('primary');
+    const [selectedGlobalHabitId, setSelectedGlobalHabitId] = useState('');
 
     useEffect(() => {
         fetchContent();
@@ -40,7 +50,26 @@ export default function ContentManagement() {
                 const data = docSnap.data();
                 setContent(data.dailyWisdom || 'Consistency is the key to lasting change.');
                 setHindiTranslation(data.hindiTranslation || 'निरंतरता ही स्थायी परिवर्तन की कुंजी है।');
-                setHabits(data.habits || DEFAULT_HABITS);
+                
+                const loadedHabits = data.habits || DEFAULT_HABITS;
+                // Merge default translations if missing in the loaded database habits
+                const mergedHabits = loadedHabits.map((h: any) => {
+                    const match = DEFAULT_HABITS.find(dh => 
+                        dh.id === h.id || 
+                        dh.name.toLowerCase() === h.name.toLowerCase()
+                    );
+                    if (match) {
+                        return {
+                            ...h,
+                            hindiName: h.hindiName || match.hindiName,
+                            hindiDescription: h.hindiDescription || match.hindiDescription,
+                            icon: h.icon || match.icon,
+                            color: h.color || match.color
+                        };
+                    }
+                    return h;
+                });
+                setHabits(mergedHabits);
             } else {
                 setContent('Consistency is the key to lasting change.');
                 setHindiTranslation('निरंतरता ही स्थायी परिवर्तन की कुंजी है।');
@@ -62,14 +91,32 @@ export default function ContentManagement() {
             id: 'habit_' + Date.now(),
             name: newHabitName.trim(),
             description: newHabitDesc.trim() || 'Custom daily practice',
+            hindiName: newHabitHindiName.trim() || newHabitName.trim(),
+            hindiDescription: newHabitHindiDesc.trim() || newHabitDesc.trim() || 'कस्टम दैनिक अभ्यास',
             icon: newHabitIcon.trim() || 'spa',
             color: newHabitColor
         };
         setHabits([...habits, newHabit]);
         setNewHabitName('');
         setNewHabitDesc('');
+        setNewHabitHindiName('');
+        setNewHabitHindiDesc('');
         setNewHabitIcon('spa');
         setNewHabitColor('primary');
+    };
+
+    const handleAddGlobalHabit = () => {
+        if (!selectedGlobalHabitId) return;
+        const habitToAdd = DEFAULT_HABITS.find(dh => dh.id === selectedGlobalHabitId);
+        if (habitToAdd) {
+            // Avoid duplicates
+            if (habits.some(h => h.id === habitToAdd.id || h.name.toLowerCase() === habitToAdd.name.toLowerCase())) {
+                alert("This habit is already in your list!");
+                return;
+            }
+            setHabits([...habits, { ...habitToAdd }]);
+            setSelectedGlobalHabitId('');
+        }
     };
 
     const handleDeleteHabit = (id: string) => {
@@ -161,7 +208,21 @@ export default function ContentManagement() {
 
                 {/* Habits Management Card */}
                 <div className="glass-panel settings-section" style={{ marginTop: '24px' }}>
-                    <h2><Activity size={24} color="var(--accent)" /> Manage Holistic Habits</h2>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+                        <h2 style={{ margin: 0 }}><Activity size={24} color="var(--accent)" /> Manage Holistic Habits</h2>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (window.confirm("Are you sure you want to reset all habits to the default 7 habits with Hindi translations? This will overwrite your current list until you save.")) {
+                                    setHabits(DEFAULT_HABITS);
+                                }
+                            }}
+                            className="glass-button secondary"
+                            style={{ padding: '6px 12px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', height: '34px' }}
+                        >
+                            <RotateCcw size={15} /> Reset to Defaults
+                        </button>
+                    </div>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '20px' }}>
                         Define the full catalogue of holistic habits that seekers can select from. Seekers can choose exactly 5 to build their daily routine.
                     </p>
@@ -191,29 +252,57 @@ export default function ContentManagement() {
 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                     {/* Habit Name input */}
-                                    <div>
-                                        <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>HABIT NAME</label>
-                                        <input
-                                            type="text"
-                                            className="glass-input"
-                                            value={habit.name}
-                                            onChange={(e) => handleHabitFieldChange(habit.id, 'name', e.target.value)}
-                                            style={{ height: '36px', fontSize: '13px' }}
-                                            required
-                                        />
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                        <div>
+                                            <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>HABIT NAME (EN)</label>
+                                            <input
+                                                type="text"
+                                                className="glass-input"
+                                                value={habit.name}
+                                                onChange={(e) => handleHabitFieldChange(habit.id, 'name', e.target.value)}
+                                                style={{ height: '36px', fontSize: '13px' }}
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>HABIT NAME (HI)</label>
+                                            <input
+                                                type="text"
+                                                className="glass-input"
+                                                value={habit.hindiName || ''}
+                                                onChange={(e) => handleHabitFieldChange(habit.id, 'hindiName', e.target.value)}
+                                                style={{ height: '36px', fontSize: '13px' }}
+                                                placeholder={habit.name}
+                                                required
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Habit Description input */}
-                                    <div>
-                                        <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>DESCRIPTION</label>
-                                        <input
-                                            type="text"
-                                            className="glass-input"
-                                            value={habit.description}
-                                            onChange={(e) => handleHabitFieldChange(habit.id, 'description', e.target.value)}
-                                            style={{ height: '36px', fontSize: '13px' }}
-                                            required
-                                        />
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                        <div>
+                                            <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>DESCRIPTION (EN)</label>
+                                            <input
+                                                type="text"
+                                                className="glass-input"
+                                                value={habit.description}
+                                                onChange={(e) => handleHabitFieldChange(habit.id, 'description', e.target.value)}
+                                                style={{ height: '36px', fontSize: '13px' }}
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>DESCRIPTION (HI)</label>
+                                            <input
+                                                type="text"
+                                                className="glass-input"
+                                                value={habit.hindiDescription || ''}
+                                                onChange={(e) => handleHabitFieldChange(habit.id, 'hindiDescription', e.target.value)}
+                                                style={{ height: '36px', fontSize: '13px' }}
+                                                placeholder={habit.description}
+                                                required
+                                            />
+                                        </div>
                                     </div>
 
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -251,15 +340,54 @@ export default function ContentManagement() {
                         ))}
                     </div>
 
+                    {/* Add from Global Catalog section */}
+                    <div className="glass-panel" style={{ padding: '20px', background: '#f0fdf4', border: '1px solid #bbf7d0', marginBottom: '16px' }}>
+                        <h3 style={{ fontSize: '15px', fontWeight: 600, marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px', color: '#166534' }}>
+                            <Activity size={18} color="#166534" /> Select from Global Habits Catalog
+                        </h3>
+                        <p style={{ fontSize: '13px', color: '#166534', margin: '0 0 12px 0' }}>
+                            Choose a standard habit from our pre-defined catalog with complete English & Hindi translations.
+                        </p>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <div style={{ flex: '1', minWidth: '250px' }}>
+                                <select
+                                    className="glass-input"
+                                    value={selectedGlobalHabitId}
+                                    onChange={(e) => setSelectedGlobalHabitId(e.target.value)}
+                                    style={{ height: '38px', padding: '6px', background: '#fff', border: '1px solid #bbf7d0' }}
+                                >
+                                    <option value="">-- Select a habit to add --</option>
+                                    {DEFAULT_HABITS.map(dh => {
+                                        const isAlreadyAdded = habits.some(h => h.id === dh.id || h.name.toLowerCase() === dh.name.toLowerCase());
+                                        return (
+                                            <option key={dh.id} value={dh.id} disabled={isAlreadyAdded}>
+                                                {dh.name} ({dh.hindiName}) {isAlreadyAdded ? '✓ Added' : ''}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleAddGlobalHabit}
+                                className="glass-button"
+                                disabled={!selectedGlobalHabitId}
+                                style={{ height: '38px', padding: '0 16px', background: '#166534', color: '#fff', border: 'none' }}
+                            >
+                                <Plus size={16} /> Add Selected Habit
+                            </button>
+                        </div>
+                    </div>
+
                     {/* Add new habit section */}
                     <div className="glass-panel" style={{ padding: '20px', background: '#f8fafc', borderStyle: 'dashed' }}>
                         <h3 style={{ fontSize: '15px', fontWeight: 600, marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Plus size={18} /> Add New Custom Habit
                         </h3>
                         
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', alignItems: 'end', marginBottom: '14px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', alignItems: 'end', marginBottom: '14px' }}>
                             <div>
-                                <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Habit Name</label>
+                                <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Habit Name (EN)</label>
                                 <input
                                     type="text"
                                     className="glass-input"
@@ -270,13 +398,35 @@ export default function ContentManagement() {
                                 />
                             </div>
                             <div>
-                                <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Description</label>
+                                <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Habit Name (HI)</label>
+                                <input
+                                    type="text"
+                                    className="glass-input"
+                                    placeholder="जैसे: दैनिक योगासन अभ्यास"
+                                    value={newHabitHindiName}
+                                    onChange={(e) => setNewHabitHindiName(e.target.value)}
+                                    style={{ height: '38px', background: '#fff' }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Description (EN)</label>
                                 <input
                                     type="text"
                                     className="glass-input"
                                     placeholder="e.g. 20 mins stretching"
                                     value={newHabitDesc}
                                     onChange={(e) => setNewHabitDesc(e.target.value)}
+                                    style={{ height: '38px', background: '#fff' }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Description (HI)</label>
+                                <input
+                                    type="text"
+                                    className="glass-input"
+                                    placeholder="जैसे: शारीरिक शक्ति के लिए योग"
+                                    value={newHabitHindiDesc}
+                                    onChange={(e) => setNewHabitHindiDesc(e.target.value)}
                                     style={{ height: '38px', background: '#fff' }}
                                 />
                             </div>

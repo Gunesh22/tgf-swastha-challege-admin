@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, BarChart2, Medal, Settings, Sun } from 'lucide-react';
+import { LayoutDashboard, Users, BarChart2, Medal, Settings, Sun, FileText } from 'lucide-react';
 
 export default function Sidebar() {
     const location = useLocation();
@@ -10,6 +10,7 @@ export default function Sidebar() {
         { path: '/leaderboard', label: 'Leaderboard', icon: Medal },
         { path: '/analytics', label: 'Analytics', icon: BarChart2 },
         { path: '/challenges', label: 'Manage Challenges', icon: Settings },
+        { path: '/content', label: 'Content Management', icon: FileText },
     ];
 
 
