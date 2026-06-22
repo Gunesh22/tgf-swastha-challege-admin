@@ -345,3 +345,90 @@ body {
   font-size: 14px;
   font-weight: 500;
 }
+
+/* Quota & Sync Card */
+.quota-card {
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-top: auto;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.quota-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+}
+
+.quota-progress-bg {
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.quota-progress-bar {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.quota-progress-bar.warning {
+  background: #f59e0b;
+}
+
+.quota-progress-bar.danger {
+  background: var(--danger);
+}
+
+.quota-meta {
+  color: var(--text-secondary);
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.quota-btn-edit {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.quota-btn-edit:hover {
+  color: var(--text-primary);
+  background: #e2e8f0;
+}
+
+.quota-edit-inline {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.quota-edit-input {
+  width: 80px;
+  padding: 4px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 12px;
+  outline: none;
+}
+
+.quota-edit-input:focus {
+  border-color: var(--accent);
+}

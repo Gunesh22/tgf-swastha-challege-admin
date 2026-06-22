@@ -1,60 +1,44 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { db } from '../firebase';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { useData } from '../context/DataContext';
 import { computeGlobalUserStats } from '../utils/stats';
 import type { UserStats } from '../utils/stats';
 import { ChevronLeft } from 'lucide-react';
 
 export default function UserDetail() {
     const { id } = useParams();
-    const [loading, setLoading] = useState(true);
+    const { users, userChallenges: allUserChallenges, challenges, loading } = useData();
     const [stats, setStats] = useState<UserStats | null>(null);
     const [userChallenges, setUserChallenges] = useState<any[]>([]);
     const [challengeMap, setChallengeMap] = useState<Record<string, {title: string, name?: string, durationDays: number}>>({});
 
     useEffect(() => {
-        if (!id) return;
+        if (!id || loading) return;
         
-        const fetchUser = async () => {
-            try {
-                // Fetch the user document
-                const uSnap = await getDoc(doc(db, 'users', id));
-                if (!uSnap.exists()) {
-                    setLoading(false);
-                    return;
-                }
-                const userData = { id: uSnap.id, ...uSnap.data() };
+        // Find the user document locally
+        const userData = users.find(u => u.id === id);
+        if (!userData) {
+            setStats(null);
+            return;
+        }
 
-                // Fetch this user's challenge enrollments
-                const q = query(collection(db, 'user_challenges'), where('userId', '==', id));
-                const ucSnap = await getDocs(q);
-                const ucData: any[] = [];
-                ucSnap.forEach(d => ucData.push(d.data()));
-                setUserChallenges(ucData);
+        // Filter this user's challenge enrollments locally
+        const ucData = allUserChallenges.filter(uc => uc.userId === id);
+        setUserChallenges(ucData);
 
-                // Fetch all challenges to resolve IDs to names
-                const cSnap = await getDocs(collection(db, 'challenges'));
-                const cMap: Record<string, {title: string, name?: string, durationDays: number}> = {};
-                const cData: any[] = [];
-                cSnap.forEach(d => {
-                    const data = d.data();
-                    cMap[d.id] = { title: data.title || data.name || d.id, name: data.name, durationDays: data.durationDays || 0 };
-                    cData.push({ id: d.id, ...data });
-                });
-                setChallengeMap(cMap);
+        // Build challenges lookup map
+        const cMap: Record<string, {title: string, name?: string, durationDays: number}> = {};
+        challenges.forEach(c => {
+            cMap[c.id] = { title: c.title || c.name || c.id, name: c.name, durationDays: c.durationDays || 0 };
+        });
+        setChallengeMap(cMap);
 
-                // Compute stats for this single user
-                const computed = computeGlobalUserStats([userData], ucData, cData);
-                setStats(computed[0] || null);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchUser();
-    }, [id]);
+        // Compute stats for this single user
+        const computed = computeGlobalUserStats([userData], ucData, challenges);
+        setStats(computed[0] || null);
+
+    }, [id, users, allUserChallenges, challenges, loading]);
+
 
     if (loading) return <div className="main-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading user profile...</div>;
     

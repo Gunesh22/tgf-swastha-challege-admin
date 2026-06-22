@@ -1,42 +1,21 @@
 import { useState, useEffect } from 'react';
-import { db } from '../firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { useData } from '../context/DataContext';
 import { computeGlobalUserStats } from '../utils/stats';
 import type { UserStats } from '../utils/stats';
 
 type SortMetric = 'currentStreak' | 'bestStreak' | 'totalDays' | 'consistencyRate';
 
 export default function Leaderboard() {
-    const [loading, setLoading] = useState(true);
+    const { users: rawUsers, userChallenges, challenges, loading } = useData();
     const [users, setUsers] = useState<UserStats[]>([]);
     const [metric, setMetric] = useState<SortMetric>('currentStreak');
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const uSnap = await getDocs(collection(db, 'users'));
-                const ucSnap = await getDocs(collection(db, 'user_challenges'));
-                const cSnap = await getDocs(collection(db, 'challenges'));
-                
-                const uData: any[] = [];
-                const ucData: any[] = [];
-                const cData: any[] = [];
-                
-                uSnap.forEach(d => uData.push({id: d.id, ...d.data()}));
-                ucSnap.forEach(d => ucData.push(d.data()));
-                cSnap.forEach(d => cData.push({id: d.id, ...d.data()}));
+        if (loading) return;
+        const computed = computeGlobalUserStats(rawUsers, userChallenges, challenges);
+        setUsers(computed);
+    }, [rawUsers, userChallenges, challenges, loading]);
 
-                const computed = computeGlobalUserStats(uData, ucData, cData);
-                setUsers(computed);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-    }, []);
 
     const sortedUsers = [...users].sort((a, b) => b[metric] - a[metric]);
     const top3 = sortedUsers.slice(0, 3);

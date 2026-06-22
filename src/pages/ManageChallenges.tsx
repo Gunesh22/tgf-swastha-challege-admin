@@ -1,29 +1,9 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, getDocs, getDoc, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDoc, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { PlusCircle, Search, Trash2, Calendar, LayoutList, RefreshCw, CheckCircle, Edit2, X } from 'lucide-react';
-
-interface Habit {
-    id: string;
-    name: string;
-    description: string;
-    icon: string;
-    color: string;
-    hindiName?: string;
-    hindiDescription?: string;
-}
-
-interface Challenge {
-    id: string;
-    title: string;
-    description: string;
-    durationDays: number;
-    habitCount: number;
-    startType: 'rolling' | 'cohort';
-    startDate?: string;
-    isActive: boolean;
-    habits?: Habit[];
-}
+import { useData } from '../context/DataContext';
+import type { Challenge, Habit } from '../context/DataContext';
 
 const HOLISTIC_HABITS: Habit[] = [
     { id: 'early_rising', name: 'Early Rising', description: 'Wake up early to start your day with energy', hindiName: 'प्रातः काल जागरण', hindiDescription: 'ऊर्जा के साथ दिन की शुरुआत के लिए सुबह जल्दी उठें', icon: 'wb_sunny', color: 'primary' },
@@ -36,7 +16,7 @@ const HOLISTIC_HABITS: Habit[] = [
     { id: 'water', name: 'Drink Water', description: 'Stay hydrated (3L)', hindiName: 'पानी पीना', hindiDescription: 'हाइड्रेटेड रहें (3 लीटर)', icon: 'water_drop', color: 'primary' },
     { id: 'meditate', name: 'Meditate', description: 'Mindfulness practice (15m)', hindiName: 'ध्यान साधना', hindiDescription: 'सचेतन अभ्यास (15 मिनट)', icon: 'self_improvement', color: 'secondary' },
     { id: 'read', name: 'Read Book', description: '10 pages a day', hindiName: 'पुस्तक पढ़ना', hindiDescription: 'रोज 10 पृष्ठ पढ़ें', icon: 'menu_book', color: 'tertiary' },
-    { id: 'exercise', name: 'Exercise', description: 'Active movement (30m)', hindiName: 'व्यायाम', hindiDescription: 'सक्रिय शारीरिक गतिविधि (30 मिनट)', icon: 'fitness_center', color: 'primary' },
+    { id: 'exercise', name: 'Exercise', description: 'Active movement (30m)', hindiName: 'व्यायाम', hindiDescription: 'व्यायाम', icon: 'fitness_center', color: 'primary' },
     { id: 'journal', name: 'Journaling', description: 'Reflect on today', hindiName: 'दैनिक डायरी लिखना', hindiDescription: 'आज के दिन पर विचार करें', icon: 'edit_note', color: 'secondary' },
     { id: 'sleep', name: 'Sleep 8 Hours', description: 'Proper body recovery', hindiName: '8 घंटे की नींद', hindiDescription: 'शरीर को पुनर्जीवित करने के लिए', icon: 'bedtime', color: 'tertiary' },
     { id: 'diet', name: 'Healthy Meal', description: 'Fuel your body right', hindiName: 'स्वस्वस्थ भोजन', hindiDescription: 'शरीर को सही पोषण दें', icon: 'restaurant', color: 'primary' }
@@ -59,8 +39,8 @@ const getHabitIconEmoji = (iconName: string): string => {
 };
 
 export default function ManageChallenges() {
-    const [challenges, setChallenges] = useState<Challenge[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { challenges, refreshData, loading: contextLoading } = useData();
+    const [loadingLocal, setLoadingLocal] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState('');
 
@@ -91,21 +71,7 @@ export default function ManageChallenges() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | 'upcoming' | 'running' | 'done' | 'rolling'>('all');
 
-    const fetchChallenges = async () => {
-        setLoading(true);
-        try {
-            const querySnapshot = await getDocs(collection(db, 'challenges'));
-            const fetchedChallenges: Challenge[] = [];
-            querySnapshot.forEach((docSnap) => {
-                fetchedChallenges.push({ id: docSnap.id, ...docSnap.data() } as Challenge);
-            });
-            setChallenges(fetchedChallenges);
-        } catch (err) {
-            console.error('Error fetching challenges', err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const loading = contextLoading || loadingLocal;
 
     const fetchGlobalHabits = async () => {
         try {
@@ -126,7 +92,6 @@ export default function ManageChallenges() {
     };
 
     useEffect(() => {
-        fetchChallenges();
         fetchGlobalHabits();
     }, []);
 
@@ -156,6 +121,7 @@ export default function ManageChallenges() {
 
         setSubmitting(true);
         setMessage('');
+        setLoadingLocal(true);
 
         try {
             // Build the dynamic list of habits for this challenge
@@ -203,14 +169,15 @@ export default function ManageChallenges() {
             setIsFormOpen(false);
             handleResetHabitState();
 
-            // Refresh list
-            fetchChallenges();
+            // Refresh cached data context (forces Firestore load)
+            await refreshData(true);
 
         } catch (err) {
             console.error('Error saving challenge', err);
             setMessage(`Failed to save challenge: ${(err as any).message}`);
         } finally {
             setSubmitting(false);
+            setLoadingLocal(false);
         }
     };
 
@@ -271,11 +238,14 @@ export default function ManageChallenges() {
     const handleDelete = async (id: string, challengeTitle: string) => {
         if (window.confirm(`Are you sure you want to completely delete "${challengeTitle}"? This action cannot be undone.`)) {
             try {
+                setLoadingLocal(true);
                 await deleteDoc(doc(db, 'challenges', id));
-                fetchChallenges();
+                await refreshData(true);
             } catch (err) {
                 console.error('Error deleting challenge', err);
                 alert('Failed to delete challenge.');
+            } finally {
+                setLoadingLocal(false);
             }
         }
     };

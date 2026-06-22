@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import { db } from '../firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { useData } from '../context/DataContext';
 import { computeGlobalUserStats } from '../utils/stats';
 import type { UserStats } from '../utils/stats';
 import { Link } from 'react-router-dom';
 
 export default function Users() {
-    const [loading, setLoading] = useState(true);
+    const { users, userChallenges, challenges, loading } = useData();
     const [statsList, setStatsList] = useState<UserStats[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     
@@ -16,38 +15,16 @@ export default function Users() {
     const itemsPerPage = 50;
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Fetch users
-                const uSnap = await getDocs(collection(db, 'users'));
-                const users: any[] = [];
-                uSnap.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
+        if (loading) return;
 
-                // Fetch all user challenge progress
-                const ucSnap = await getDocs(collection(db, 'user_challenges'));
-                const ucs: any[] = [];
-                ucSnap.forEach(doc => ucs.push({ id: doc.id, ...doc.data() }));
+        const computed = computeGlobalUserStats(users, userChallenges, challenges);
+        
+        // Default sort by longest streak descending
+        computed.sort((a, b) => b.currentStreak - a.currentStreak);
+        
+        setStatsList(computed);
+    }, [users, userChallenges, challenges, loading]);
 
-                // Fetch challenges for proper consistency calculation
-                const cSnap = await getDocs(collection(db, 'challenges'));
-                const challenges: any[] = [];
-                cSnap.forEach(doc => challenges.push({ id: doc.id, ...doc.data() }));
-
-                const computed = computeGlobalUserStats(users, ucs, challenges);
-                
-                // Default sort by longest streak descending
-                computed.sort((a, b) => b.currentStreak - a.currentStreak);
-                
-                setStatsList(computed);
-            } catch (err) {
-                console.error("Failed to fetch users data", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-    }, []);
 
     const filtered = statsList.filter(s => 
         s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 

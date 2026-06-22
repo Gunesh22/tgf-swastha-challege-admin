@@ -1,29 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Users, UserCheck, CheckCircle, TrendingDown, Flame, Trophy, RefreshCw, Activity, ArrowRight, Download } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { db } from '../firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useData } from '../context/DataContext';
 import { computeGlobalUserStats } from '../utils/stats';
 import type { UserStats } from '../utils/stats';
 import { Link } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 
-interface Challenge {
-    id: string;
-    name: string;
-    title?: string;
-    durationDays: number;
-}
-
 export default function Dashboard() {
-    const [loading, setLoading] = useState(true);
+    const { users, userChallenges, challenges, loading } = useData();
 
     // Global data
     const [globalStats, setGlobalStats] = useState<UserStats[]>([]);
     const [recentActivity, setRecentActivity] = useState<{user: string, date: string, type: string}[]>([]);
 
     // Challenge-wise data
-    const [challenges, setChallenges] = useState<Challenge[]>([]);
     const [selectedChallengeId, setSelectedChallengeId] = useState<string>('');
     const [challengeStats, setChallengeStats] = useState({
         totalUsers: 0,
@@ -35,149 +26,116 @@ export default function Dashboard() {
     const [rawEnrollments, setRawEnrollments] = useState<any[]>([]);
     const [userProfiles, setUserProfiles] = useState<Record<string, any>>({});
 
-    // 1. Fetch challenges, users, and compute global stats
+    // Set default selected challenge when challenges are loaded
     useEffect(() => {
-        const fetchAll = async () => {
-            try {
-                // Fetch challenges
-                const cSnap = await getDocs(collection(db, 'challenges'));
-                const fetchedChallenges: Challenge[] = [];
-                cSnap.forEach(doc => fetchedChallenges.push({ id: doc.id, ...doc.data() } as Challenge));
-                setChallenges(fetchedChallenges);
-                if (fetchedChallenges.length > 0) {
-                    setSelectedChallengeId(fetchedChallenges[0].id);
-                }
+        if (challenges.length > 0 && !selectedChallengeId) {
+            setSelectedChallengeId(challenges[0].id);
+        }
+    }, [challenges, selectedChallengeId]);
 
-                // Fetch users
-                const uSnap = await getDocs(collection(db, 'users'));
-                const uData: any[] = [];
-                const profilesMap: Record<string, any> = {};
-                uSnap.forEach(doc => {
-                    uData.push({ id: doc.id, ...doc.data() });
-                    profilesMap[doc.id] = doc.data();
+    // 1. Process users and compute global stats
+    useEffect(() => {
+        if (loading) return;
+
+        const profilesMap: Record<string, any> = {};
+        users.forEach(u => {
+            profilesMap[u.id] = u;
+        });
+        setUserProfiles(profilesMap);
+
+        // Compute global stats (pass challenges for proper consistency calculation)
+        const computed = computeGlobalUserStats(users, userChallenges, challenges);
+        setGlobalStats(computed);
+
+        // Build real recent activity
+        const todayStr = new Date().toISOString().split('T')[0];
+        const activityEntries: {user: string, date: string, type: string, sortDate: string}[] = [];
+        computed.forEach(u => {
+            if (u.lastPracticeDate) {
+                activityEntries.push({
+                    user: u.name,
+                    date: u.lastPracticeDate === todayStr ? 'Today' : u.lastPracticeDate,
+                    type: 'completed practice',
+                    sortDate: u.lastPracticeDate
                 });
-                setUserProfiles(profilesMap);
-
-                // Fetch all user_challenges for global stats
-                const ucSnap = await getDocs(collection(db, 'user_challenges'));
-                const ucData: any[] = [];
-                ucSnap.forEach(doc => ucData.push(doc.data()));
-
-                // Compute global stats (pass challenges for proper consistency calculation)
-                const computed = computeGlobalUserStats(uData, ucData, fetchedChallenges);
-                setGlobalStats(computed);
-
-                // Build real recent activity
-                const todayStr = new Date().toISOString().split('T')[0];
-                const activityEntries: {user: string, date: string, type: string, sortDate: string}[] = [];
-                computed.forEach(u => {
-                    if (u.lastPracticeDate) {
-                        activityEntries.push({
-                            user: u.name,
-                            date: u.lastPracticeDate === todayStr ? 'Today' : u.lastPracticeDate,
-                            type: 'completed practice',
-                            sortDate: u.lastPracticeDate
-                        });
-                    }
-                });
-                activityEntries.sort((a, b) => b.sortDate.localeCompare(a.sortDate));
-                setRecentActivity(activityEntries.slice(0, 5));
-
-            } catch (err) {
-                console.error('Error fetching data', err);
-            } finally {
-                setLoading(false);
             }
-        };
+        });
+        activityEntries.sort((a, b) => b.sortDate.localeCompare(a.sortDate));
+        setRecentActivity(activityEntries.slice(0, 5));
 
-        fetchAll();
-    }, []);
+    }, [users, userChallenges, challenges, loading]);
 
-    // 2. Fetch enrollments for the selected challenge
+    // 2. Compute challenge-specific data locally from userChallenges
     useEffect(() => {
         if (!selectedChallengeId || challenges.length === 0) return;
 
-        const fetchEnrollments = async () => {
-            try {
-                const selectedChallenge = challenges.find(c => c.id === selectedChallengeId);
-                if (!selectedChallenge) return;
+        const selectedChallenge = challenges.find(c => c.id === selectedChallengeId);
+        if (!selectedChallenge) return;
 
-                const duration = selectedChallenge.durationDays;
+        const duration = selectedChallenge.durationDays;
 
-                const q = query(
-                    collection(db, 'user_challenges'),
-                    where('challengeId', '==', selectedChallengeId)
-                );
+        // Filter locally instead of querying firestore
+        const enrollments = userChallenges.filter(uc => uc.challengeId === selectedChallengeId);
+        setRawEnrollments(enrollments);
 
-                const querySnapshot = await getDocs(q);
-                const enrollments: any[] = [];
-                querySnapshot.forEach(docSnap => enrollments.push(docSnap.data()));
-                setRawEnrollments(enrollments);
+        // Compute challenge-specific statistics
+        const totalUsers = enrollments.length;
+        let activeToday = 0;
+        let completedUsers = 0;
+        const todayStr = new Date().toISOString().split('T')[0];
 
-                // Compute challenge-specific statistics
-                const totalUsers = enrollments.length;
-                let activeToday = 0;
-                let completedUsers = 0;
-                const todayStr = new Date().toISOString().split('T')[0];
+        const dayCounts = new Array(duration).fill(0);
 
-                const dayCounts = new Array(duration).fill(0);
+        enrollments.forEach(enroll => {
+            const progress = enroll.completedDays || {};
+            const progressKeys = Object.keys(progress);
 
-                enrollments.forEach(enroll => {
-                    const progress = enroll.completedDays || {};
-                    const progressKeys = Object.keys(progress);
-
-                    // Check if active today
-                    if (progressKeys.some((dateStr: string) => dateStr.split('T')[0] === todayStr)) {
-                        activeToday++;
-                    }
-
-                    // Check completion
-                    if (progressKeys.length >= duration) {
-                        completedUsers++;
-                    }
-
-                    // Tally for retention chart
-                    for (let i = 1; i <= duration; i++) {
-                        if (progressKeys.length >= i) {
-                            dayCounts[i - 1]++;
-                        }
-                    }
-                });
-
-                const completionRate = totalUsers > 0 ? Math.round((completedUsers / totalUsers) * 100) : 0;
-
-                // Find biggest drop-off day
-                let dropOffDay = 0;
-                let maxDrop = 0;
-                for (let i = 0; i < dayCounts.length - 1; i++) {
-                    const drop = dayCounts[i] - dayCounts[i + 1];
-                    if (drop > maxDrop) {
-                        maxDrop = drop;
-                        dropOffDay = i + 1;
-                    }
-                }
-
-                setChallengeStats({
-                    totalUsers,
-                    activeToday,
-                    completionRate,
-                    dropOffDay: dropOffDay || 1
-                });
-
-                // Build retention chart
-                const cData = dayCounts.map((count, index) => ({
-                    day: `Day ${index + 1}`,
-                    active: count
-                }));
-                setRetentionData(cData);
-
-            } catch (err) {
-                console.error('Error fetching enrollments', err);
+            // Check if active today
+            if (progressKeys.some((dateStr: string) => dateStr.split('T')[0] === todayStr)) {
+                activeToday++;
             }
-        };
 
-        fetchEnrollments();
-    }, [selectedChallengeId, challenges]);
+            // Check completion
+            if (progressKeys.length >= duration) {
+                completedUsers++;
+            }
+
+            // Tally for retention chart
+            for (let i = 1; i <= duration; i++) {
+                if (progressKeys.length >= i) {
+                    dayCounts[i - 1]++;
+                }
+            }
+        });
+
+        const completionRate = totalUsers > 0 ? Math.round((completedUsers / totalUsers) * 100) : 0;
+
+        // Find biggest drop-off day
+        let dropOffDay = 0;
+        let maxDrop = 0;
+        for (let i = 0; i < dayCounts.length - 1; i++) {
+            const drop = dayCounts[i] - dayCounts[i + 1];
+            if (drop > maxDrop) {
+                maxDrop = drop;
+                dropOffDay = i + 1;
+            }
+        }
+
+        setChallengeStats({
+            totalUsers,
+            activeToday,
+            completionRate,
+            dropOffDay: dropOffDay || 1
+        });
+
+        // Build retention chart
+        const cData = dayCounts.map((count, index) => ({
+            day: `Day ${index + 1}`,
+            active: count
+        }));
+        setRetentionData(cData);
+
+    }, [selectedChallengeId, challenges, userChallenges]);
 
     // Excel export
     const handleExportExcel = () => {
@@ -216,6 +174,7 @@ export default function Dashboard() {
             </div>
         );
     }
+
 
     // Global KPIs
     const totalUsers = globalStats.length;
